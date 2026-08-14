@@ -1,0 +1,69 @@
+# ==================
+# Python
+# ==================
+
+# Virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pytest
+.pytest_cache/
+
+# ==================
+# Node / React
+# ==================
+
+node_modules/
+
+dist/
+build/
+
+# Vite cache
+.vite/
+
+# ==================
+# Environment
+# ==================
+
+.env
+.env.*
+!.env.example
+
+# ==================
+# IDE
+# ==================
+
+.vscode/
+.idea/
+
+# ==================
+# OS
+# ==================
+
+.DS_Store
+Thumbs.db
+
+# ==================
+# Logs
+# ==================
+
+*.log
+
+# ==================
+# CodeVoyager
+# ==================
+
+# Local projects
+workspace/
+
+# AI cache
+cache/
+
+# Local database
+*.sqlite
+*.db
