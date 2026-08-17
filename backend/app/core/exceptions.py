@@ -14,12 +14,5 @@ class ProjectNotFoundError(CodeVoyagerError):
     code = "project_not_found"
 
 
-class InvalidProjectUrlError(CodeVoyagerError):
-    """Raised when a project URL is not a supported repository URL."""
-
-    status_code = 400
-    code = "invalid_project_url"
-
-
 class ProjectAnalysisError(CodeVoyagerError):
     pass

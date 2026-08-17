@@ -2,12 +2,11 @@ from enum import StrEnum
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProjectSourceType(StrEnum):
 
-    GITHUB = "github"
     LOCAL = "local"
 
 
@@ -17,5 +16,4 @@ class Project(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     name: str = Field(min_length=1, max_length=255)
     source_type: ProjectSourceType
-    source_url: HttpUrl | None = None
     local_path: Path

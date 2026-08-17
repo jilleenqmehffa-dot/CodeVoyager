@@ -1,6 +1,6 @@
 # CodeVoyager 模块开发清单
 
-> V1 核心目标：完成 **GitHub 项目导入 → 项目分析 → 学习路线 → 源码学习 → AI 辅导 → 学习记录** 的完整闭环。
+> V1 核心目标：完成 **本地项目导入 → 项目分析 → 学习路线 → 源码学习 → AI 辅导 → 学习记录** 的完整闭环。
 
 ---
 
@@ -44,16 +44,12 @@ CodeVoyager/
 
 用户可以：
 
-* 输入 GitHub Repository URL
-* 导入 GitHub 项目
 * 导入本地已有项目
 * 查看已经导入的项目
 * 删除项目
 
 ## 后端工作
 
-* Git URL 校验
-* `git clone`
 * 获取仓库名称
 * 获取本地路径
 * Clone 失败处理
@@ -69,7 +65,6 @@ Project
     id
     name
     source_type
-    source_url
     local_path
 ```
 
@@ -938,8 +933,6 @@ ERROR
 重点测试：
 
 ```text
-Git URL解析
-
 文件扫描
 
 语言识别

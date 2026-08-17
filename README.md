@@ -62,7 +62,7 @@ The goal is:
 AI helps you understand how the project was built.
 
 🧩 Planned Workflow
-Import GitHub Repository
+Import Local Project
         ↓
 Analyze Project
         ↓
@@ -116,7 +116,7 @@ The first milestone focuses on:
 
 Project initialization
 
-GitHub repository import
+Local project import
 
 Basic repository analysis
 

@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.core.exceptions import CodeVoyagerError
 from app.core.logger import logger
-from app.routers.projects import router as projects_router
 
 
 @asynccontextmanager
@@ -25,7 +24,6 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
-app.include_router(projects_router)
 
 
 @app.exception_handler(CodeVoyagerError)
