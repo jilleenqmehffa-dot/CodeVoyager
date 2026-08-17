@@ -14,5 +14,12 @@ class ProjectNotFoundError(CodeVoyagerError):
     code = "project_not_found"
 
 
+class InvalidLocalProjectError(CodeVoyagerError):
+    """Raised when a local project directory cannot be imported."""
+
+    status_code = 400
+    code = "invalid_local_project"
+
+
 class ProjectAnalysisError(CodeVoyagerError):
     pass

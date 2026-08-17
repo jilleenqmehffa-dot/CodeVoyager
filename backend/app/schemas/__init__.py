@@ -1,3 +1,3 @@
-from app.schemas.projects import ProjectSchema
+from app.schemas.projects import LocalProjectImportRequest, ProjectSchema
 
-__all__ = ["ProjectSchema"]
+__all__ = ["LocalProjectImportRequest", "ProjectSchema"]

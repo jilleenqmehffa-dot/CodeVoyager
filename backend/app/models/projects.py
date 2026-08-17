@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+
 class Project(BaseModel):
     """Core project data stored by CodeVoyager."""
 
