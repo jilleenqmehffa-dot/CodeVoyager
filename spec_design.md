@@ -55,10 +55,7 @@ CodeVoyager/
 * Git URL 校验
 * `git clone`
 * 获取仓库名称
-* 获取默认分支
-* 获取 Commit 信息
 * 获取本地路径
-* 判断项目是否已经存在
 * Clone 失败处理
 * 项目元数据保存
 
@@ -69,14 +66,11 @@ CodeVoyager/
 ```text
 Project
 
-id
-name
-repo_url
-local_path
-default_branch
-commit_hash
-created_at
-last_opened_at
+    id
+    name
+    source_type
+    source_url
+    local_path
 ```
 
 ---
