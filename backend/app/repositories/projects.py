@@ -2,18 +2,15 @@ from functools import lru_cache
 from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import String, create_engine, delete
-from sqlalchemy.engine import URL, Engine
+from sqlalchemy import String, delete
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.config import get_settings
 from app.core.exceptions import ProjectAlreadyExistsError
 from app.models.projects import Project
-
-
-class Base(DeclarativeBase):
-    pass
+from app.repositories.database import Base, create_session_factory, create_sqlite_engine
 
 
 class ProjectRecord(Base):
@@ -29,10 +26,8 @@ class ProjectRepository:
 
     def __init__(self, database_path: str | Path) -> None:
         self.database_path = Path(database_path)
-        self.engine: Engine = create_engine(
-            URL.create("sqlite+pysqlite", database=str(self.database_path))
-        )
-        self._session_factory = sessionmaker(self.engine, expire_on_commit=False)
+        self.engine: Engine = create_sqlite_engine(self.database_path)
+        self._session_factory = create_session_factory(self.engine)
 
     def initialize(self) -> None:
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
