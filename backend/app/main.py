@@ -9,6 +9,9 @@ from app.config import get_settings
 from app.core.exceptions import CodeVoyagerError
 from app.core.logger import logger
 from app.repositories import (
+    get_code_import_repository,
+    get_code_symbol_repository,
+    get_inheritance_relation_repository,
     get_project_file_repository,
     get_project_repository,
     get_project_scan_repository,
@@ -23,6 +26,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     get_project_repository().initialize()
     get_project_scan_repository().initialize()
     get_project_file_repository().initialize()
+    get_code_symbol_repository().initialize()
+    get_code_import_repository().initialize()
+    get_inheritance_relation_repository().initialize()
     logger.info("CodeVoyager API started in %s mode", settings.environment)
     yield
     logger.info("CodeVoyager API stopped")

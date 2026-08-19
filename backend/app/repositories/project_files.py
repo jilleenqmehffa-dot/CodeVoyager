@@ -95,6 +95,38 @@ class ProjectFileRepository:
             for record in records
         ]
 
+    def get_python_source_by_project_id(
+        self,
+        project_id: UUID,
+    ) -> list[ProjectFile]:
+        """Return scanned Python source files eligible for static analysis."""
+
+        self.initialize()
+        with self._session_factory() as session:
+            records = session.scalars(
+                select(ProjectFileRecord)
+                .where(
+                    ProjectFileRecord.project_id == str(project_id),
+                    ProjectFileRecord.language == "Python",
+                    ProjectFileRecord.category == "source",
+                    ProjectFileRecord.is_directory.is_(False),
+                )
+                .order_by(ProjectFileRecord.path)
+            ).all()
+        return [
+            ProjectFile(
+                id=record.id,
+                project_id=record.project_id,
+                path=record.path,
+                name=record.name,
+                file_type=record.file_type,
+                language=record.language,
+                category=record.category,
+                is_directory=record.is_directory,
+            )
+            for record in records
+        ]
+
     def delete_by_project_id(self, project_id: UUID) -> int:
         self.initialize()
         with self._session_factory.begin() as session:

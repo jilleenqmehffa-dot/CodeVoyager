@@ -7,11 +7,29 @@ from app.repositories.project_scans import (
     ProjectScanRepository,
     get_project_scan_repository,
 )
+from app.repositories.code_symbols import (
+    CodeSymbolRepository,
+    get_code_symbol_repository,
+)
+from app.repositories.code_imports import (
+    CodeImportRepository,
+    get_code_import_repository,
+)
+from app.repositories.inheritance_relations import (
+    InheritanceRelationRepository,
+    get_inheritance_relation_repository,
+)
 
 __all__ = [
+    "CodeImportRepository",
+    "CodeSymbolRepository",
+    "InheritanceRelationRepository",
     "ProjectFileRepository",
     "ProjectRepository",
     "ProjectScanRepository",
+    "get_code_import_repository",
+    "get_code_symbol_repository",
+    "get_inheritance_relation_repository",
     "get_project_file_repository",
     "get_project_repository",
     "get_project_scan_repository",
