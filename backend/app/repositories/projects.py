@@ -52,6 +52,17 @@ class ProjectRepository:
             return None
         return Project(id=row["id"], name=row["name"], local_path=row["local_path"])
 
+    def delete(self, project_id: UUID) -> bool:
+        """Delete a project by ID and report whether it existed."""
+
+        self.initialize()
+        with self._connect() as connection:
+            cursor = connection.execute(
+                "DELETE FROM projects WHERE id = ?",
+                (str(project_id),),
+            )
+        return cursor.rowcount > 0
+
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.database_path)
         connection.row_factory = sqlite3.Row
