@@ -420,7 +420,428 @@ find_symbol
 
 ---
 
-# Module 9：学习路线生成
+
+# Module 9：Agent Core / Agent Runtime
+
+## 目标
+
+自己实现一个最小可用的 Coding Agent Runtime。
+
+第一版不追求完整复刻 Codex / Claude Code，只学习并实现它们最核心的一小部分机制：
+
+```text
+用户目标
+  ↓
+LLM
+  ↓
+判断是否需要调用 Tool
+  ↓
+执行 Tool
+  ↓
+Tool Result 返回给 LLM
+  ↓
+继续判断
+  ↓
+最终回答
+```
+
+CodeVoyager 的 Agent 目标不是替用户把代码全部完成，而是：
+
+```text
+理解真实项目
+↓
+寻找与当前问题相关的信息
+↓
+调用工具读取真实源码
+↓
+结合用户当前学习任务
+↓
+给提示 / 解释 / 引导
+↓
+检查用户是否理解
+```
+
+## 第一版核心组件
+
+```text
+agent/
+├── runtime.py
+├── state.py
+├── context.py
+├── prompts.py
+├── tool_registry.py
+└── tools/
+```
+
+### runtime.py
+
+Agent 主循环。
+
+负责：
+
+```text
+接收用户消息
+↓
+构建上下文
+↓
+调用 LLM
+↓
+识别 Tool Call
+↓
+调用对应 Tool
+↓
+把 Tool Result 加回上下文
+↓
+再次调用 LLM
+↓
+直到得到最终回答
+```
+
+第一版必须设置最大循环次数，避免 Agent 无限调用工具。
+
+---
+
+### state.py
+
+保存 Agent 当前运行状态。
+
+第一版可以包含：
+
+```text
+current_project_id
+current_chapter_id
+current_task_id
+conversation_messages
+tool_call_count
+```
+
+状态只保存 Agent 当前需要的信息，不要一开始设计复杂状态机。
+
+---
+
+### context.py
+
+负责构建送给 LLM 的上下文。
+
+输入可以来自：
+
+```text
+当前用户问题
++
+Project Overview
++
+Project Tree
++
+Code Structure
++
+当前 Chapter
++
+当前 Task
++
+Tool Result
+```
+
+核心原则：
+
+```text
+不是把整个项目全部塞给 LLM
+而是根据当前问题选择需要的信息
+```
+
+后续可以加入：
+
+```text
+Context Budget
+Token Budget
+上下文裁剪
+相关文件选择
+```
+
+---
+
+### prompts.py
+
+保存 Agent 的系统提示词和教学策略。
+
+例如：
+
+```text
+你是 CodeVoyager 的源码学习 Agent。
+
+目标不是直接替用户完成所有代码，而是帮助用户理解真实项目。
+
+回答源码问题时：
+1. 优先基于真实项目数据。
+2. 信息不足时调用 Tool。
+3. 不要凭模型记忆猜测项目源码。
+4. Guide 模式优先提示和引导。
+5. Explain 模式可以直接解释。
+6. Review 模式评价用户自己的理解。
+```
+
+---
+
+### tool_registry.py
+
+统一管理 Agent 可以调用的工具。
+
+例如：
+
+```text
+Tool Registry
+
+list_files
+read_file
+search_text
+find_symbol
+find_definition
+find_references
+get_project_structure
+get_current_task
+get_learning_progress
+```
+
+职责：
+
+```text
+工具注册
+↓
+向 LLM 描述工具
+↓
+接收 Tool Call
+↓
+找到真实 Python 函数
+↓
+执行
+↓
+返回 Tool Result
+```
+
+不要把每个 Tool 的执行逻辑全部写在 runtime.py。
+
+---
+
+### tools/
+
+这里放 Agent 真正可以操作 CodeVoyager 的能力。
+
+第一版优先复用已有代码搜索能力：
+
+```text
+tools/
+├── files.py
+├── search.py
+├── symbols.py
+└── learning.py
+```
+
+例如：
+
+```text
+files.py
+- list_files()
+- read_file()
+- get_project_structure()
+
+search.py
+- search_text()
+
+symbols.py
+- find_symbol()
+- find_definition()
+- find_references()
+
+learning.py
+- get_current_task()
+- get_learning_progress()
+```
+
+Tools 尽量调用 CodeVoyager 已有 Scanner、AST、Code Graph、Repository，而不是重复重新扫描项目。
+
+---
+
+## Agent Loop
+
+第一版核心流程：
+
+```text
+用户：
+ProjectRepository 是干嘛的？
+
+↓ Agent Runtime
+
+LLM：
+我需要先找到 ProjectRepository
+
+↓ Tool Call
+
+find_symbol("ProjectRepository")
+
+↓ Tool Result
+
+backend/app/repositories/projects.py
+line 10
+
+↓ LLM
+
+还需要读取真实源码
+
+↓ Tool Call
+
+read_file(
+  "backend/app/repositories/projects.py"
+)
+
+↓ Tool Result
+
+真实源码
+
+↓ LLM
+
+结合：
+- 当前问题
+- 当前学习任务
+- 真实源码
+
+↓
+生成教学回答
+```
+
+---
+
+## 与前面模块的关系
+
+```text
+Project Scanner
+= 告诉 Agent 项目里有什么
+
+Python AST
+= 告诉 Agent 文件内部有什么 Symbol
+
+Code Graph
+= 告诉 Agent 代码之间有什么关系
+
+Code Search
+= 给 Agent 搜索真实项目的能力
+
+Agent Core
+= 决定下一步需要调用什么 Tool
+
+AI Tutor
+= Agent 面向用户表现出来的教学策略
+```
+
+Agent Core 不重新实现 Scanner、AST 和 Search，而是调用它们。
+
+---
+
+## V1 开发阶段
+
+### Agent V0：普通 LLM 调用
+
+理解：
+
+```text
+System Message
+User Message
+Assistant Message
+```
+
+完成最基础的模型调用。
+
+### Agent V1：单 Tool
+
+只实现：
+
+```text
+read_file()
+```
+
+让 LLM 可以主动请求读取文件。
+
+### Agent V2：Tool Registry
+
+支持多个工具统一注册和调用。
+
+### Agent V3：Agent Loop
+
+完成：
+
+```text
+LLM
+↓
+Tool Call
+↓
+Tool Result
+↓
+LLM
+```
+
+的循环。
+
+### Agent V4：Agent State
+
+加入当前：
+
+```text
+Project
+Chapter
+Task
+Conversation
+```
+
+### Agent V5：Context Builder
+
+根据当前问题动态选择项目上下文。
+
+### Agent V6：Teaching Policy
+
+加入：
+
+```text
+Guide
+Explain
+Review
+```
+
+三种教学模式。
+
+---
+
+## 第一版暂时不做
+
+```text
+多 Agent
+Sub Agent
+自动修改源码
+自动提交 Git
+自动执行高风险 Shell
+复杂任务规划器
+长期自主运行
+复杂 Memory 系统
+```
+
+第一版重点是亲手理解并实现：
+
+```text
+LLM
++
+Tool Calling
++
+Agent Loop
++
+Context
++
+State
++
+Teaching Policy
+```
+
+这构成 CodeVoyager 自己的最小 Agent Runtime。
+
+---
+
+# Module 10：学习路线生成
 
 ## 功能
 
@@ -498,7 +919,7 @@ tasks
 
 ---
 
-# Module 10：学习任务系统
+# Module 11：学习任务系统
 
 ## 功能
 
@@ -558,7 +979,7 @@ Completed
 
 ---
 
-# Module 11：AI Tutor
+# Module 12：AI Tutor
 
 ## 功能
 
@@ -612,7 +1033,7 @@ Hint 2
 
 ---
 
-# Module 12：Agent Tools
+# Module 13：Agent Tools
 
 ## 功能
 
@@ -658,7 +1079,7 @@ Agent 必须尽可能根据**真实项目数据**回答，而不是凭空回答�
 
 ---
 
-# Module 13：学习进度
+# Module 14：学习进度
 
 ## 功能
 
@@ -696,7 +1117,7 @@ Overall Progress
 
 ---
 
-# Module 14：学习笔记
+# Module 15：学习笔记
 
 ## 功能
 
@@ -740,7 +1161,7 @@ APIRoute
 
 ---
 
-# Module 15：本地数据存储
+# Module 16：本地数据存储
 
 ## 技术
 
@@ -800,7 +1221,7 @@ Temporary Files
 
 ---
 
-# Module 16：项目 Dashboard
+# Module 17：项目 Dashboard
 
 ## 首页
 
@@ -837,7 +1258,7 @@ Event Loop
 
 ---
 
-# Module 17：设置系统
+# Module 18：设置系统
 
 ## 基础设置
 
@@ -868,7 +1289,7 @@ API Key 不直接写进代码仓库。
 
 ---
 
-# Module 18：缓存与空间管理
+# Module 19：缓存与空间管理
 
 ## 功能
 
@@ -897,7 +1318,7 @@ Total          170 MB
 
 ---
 
-# Module 19：错误与日志
+# Module 20：错误与日志
 
 ## 功能
 
@@ -926,7 +1347,7 @@ ERROR
 
 ---
 
-# Module 20：测试
+# Module 21：测试
 
 ## 单元测试
 
@@ -985,27 +1406,29 @@ Symbol查找
       ↓
 09 代码搜索
       ↓
-10 学习路线
+10 Agent Core / Agent Runtime
       ↓
-11 学习任务
+11 学习路线
       ↓
-12 AI Tutor
+12 学习任务
       ↓
-13 Agent Tools
+13 AI Tutor
       ↓
-14 学习进度
+14 Agent Tools
       ↓
-15 学习笔记
+15 学习进度
       ↓
-16 本地存储
+16 学习笔记
       ↓
-17 Dashboard
+17 本地存储
       ↓
-18 设置
+18 Dashboard
       ↓
-19 缓存管理
+19 设置
       ↓
-20 错误处理与测试
+20 缓存管理
+      ↓
+21 错误处理与测试
 ```
 
 # V1 暂时不开发
