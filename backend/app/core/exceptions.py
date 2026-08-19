@@ -21,5 +21,12 @@ class InvalidLocalProjectError(CodeVoyagerError):
     code = "invalid_local_project"
 
 
+class ProjectAlreadyExistsError(CodeVoyagerError):
+    """Raised when the same local directory has already been imported."""
+
+    status_code = 409
+    code = "project_already_exists"
+
+
 class ProjectAnalysisError(CodeVoyagerError):
     pass

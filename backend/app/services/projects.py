@@ -3,10 +3,19 @@ from pathlib import Path
 
 from app.core.exceptions import InvalidLocalProjectError
 from app.models.projects import Project
+from app.repositories.projects import ProjectRepository
 
 
-def import_local_project(local_path: str | Path) -> Project:
-    """Validate a local directory and construct its project metadata."""
+def import_local_project(
+    name: str,
+    local_path: str | Path,
+    repository: ProjectRepository,
+) -> Project:
+    """Validate a local directory and persist its project metadata."""
+
+    project_name = name.strip()
+    if not project_name:
+        raise InvalidLocalProjectError("Project name cannot be empty")
 
     raw_path = str(local_path).strip()
     if not raw_path:
@@ -30,4 +39,5 @@ def import_local_project(local_path: str | Path) -> Project:
     if not project_path.name:
         raise InvalidLocalProjectError("Filesystem root cannot be imported as a project")
 
-    return Project(name=project_path.name, local_path=project_path)
+    project = Project(name=project_name, local_path=project_path)
+    return repository.create(project)

@@ -19,6 +19,12 @@ class Settings:
     workspace: Path = Path(
         os.getenv("CODEVOYAGER_WORKSPACE", str(PROJECT_ROOT / "workspace"))
     ).expanduser()
+    database_path: Path = Path(
+        os.getenv(
+            "CODEVOYAGER_DATABASE_PATH",
+            str(PROJECT_ROOT / "workspace" / "codevoyager.db"),
+        )
+    ).expanduser()
     openai_api_key: str | None = os.getenv("OPENAI_API_KEY") or None
 
 

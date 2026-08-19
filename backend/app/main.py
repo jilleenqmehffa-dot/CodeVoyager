@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.core.exceptions import CodeVoyagerError
 from app.core.logger import logger
+from app.repositories.projects import get_project_repository
 from app.routers import projects_router
 
 
@@ -15,6 +16,7 @@ from app.routers import projects_router
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     settings.workspace.mkdir(parents=True, exist_ok=True)
+    get_project_repository().initialize()
     logger.info("CodeVoyager API started in %s mode", settings.environment)
     yield
     logger.info("CodeVoyager API stopped")
