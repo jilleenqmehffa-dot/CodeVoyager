@@ -91,6 +91,7 @@ def analyze_python_file(
             )
 
     result.imports = _extract_imports(project, project_file, tree)
+    _resolve_local_parent_symbols(result)
     return result
 
 
