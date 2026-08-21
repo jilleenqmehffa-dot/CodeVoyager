@@ -138,7 +138,6 @@ V1 优先支持 Python。
 * Function
 * Method
 * Import
-* Module
 * 继承关系
 * 函数位置
 * 类位置
