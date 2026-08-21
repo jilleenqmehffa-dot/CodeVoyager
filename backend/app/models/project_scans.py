@@ -3,6 +3,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from app.models.project_files import ProjectFile
+
 
 class ProjectScan(BaseModel):
     """Project-level facts produced by one deterministic scan."""
@@ -13,3 +15,10 @@ class ProjectScan(BaseModel):
     frameworks: list[str] = Field(default_factory=list)
     entrypoints: list[str] = Field(default_factory=list)
     scanned_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ProjectScanResult(BaseModel):
+    """Complete structured output from scanning one project."""
+
+    scan: ProjectScan
+    files: list[ProjectFile]

@@ -4,20 +4,19 @@ from collections import defaultdict
 from pathlib import Path
 from uuid import UUID
 
-from app.models.code_symbols import CodeSymbolType
+from app.models.code_imports import CodeImport
+from app.models.code_symbols import CodeSymbol, CodeSymbolType
+from app.models.inheritance_relations import InheritanceRelation
 from app.models.project_files import ProjectFile
 from app.models.projects import Project
+from app.models.static_analysis import (
+    PythonAnalysisFailure,
+    PythonStaticAnalysisResult,
+)
 from app.repositories.code_imports import CodeImportRepository
 from app.repositories.code_symbols import CodeSymbolRepository
 from app.repositories.inheritance_relations import InheritanceRelationRepository
 from app.repositories.project_files import ProjectFileRepository
-from app.schemas.static_analysis import (
-    CodeImportSchema,
-    CodeSymbolSchema,
-    InheritanceRelationSchema,
-    PythonAnalysisFailure,
-    PythonStaticAnalysisResult,
-)
 
 
 def analyze_project(
@@ -101,7 +100,7 @@ def _add_class(
     node: ast.ClassDef,
     result: PythonStaticAnalysisResult,
 ) -> None:
-    class_symbol = CodeSymbolSchema(
+    class_symbol = CodeSymbol(
         project_id=project.id,
         file_id=project_file.id,
         name=node.name,
@@ -116,7 +115,7 @@ def _add_class(
         parent_name = ast.unparse(base)
         if parent_name:
             result.inheritance_relations.append(
-                InheritanceRelationSchema(
+                InheritanceRelation(
                     project_id=project.id,
                     child_symbol_id=class_symbol.id,
                     parent_name=parent_name,
@@ -143,8 +142,8 @@ def _function_symbol(
     *,
     symbol_type: CodeSymbolType,
     parent_symbol_id: UUID | None = None,
-) -> CodeSymbolSchema:
-    return CodeSymbolSchema(
+) -> CodeSymbol:
+    return CodeSymbol(
         project_id=project.id,
         file_id=project_file.id,
         name=node.name,
@@ -172,12 +171,12 @@ def _extract_imports(
     project: Project,
     project_file: ProjectFile,
     tree: ast.AST,
-) -> list[CodeImportSchema]:
-    imports: list[CodeImportSchema] = []
+) -> list[CodeImport]:
+    imports: list[CodeImport] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             imports.extend(
-                CodeImportSchema(
+                CodeImport(
                     project_id=project.id,
                     file_id=project_file.id,
                     module=alias.name,
@@ -189,7 +188,7 @@ def _extract_imports(
         elif isinstance(node, ast.ImportFrom):
             module = f"{'.' * node.level}{node.module or ''}"
             imports.extend(
-                CodeImportSchema(
+                CodeImport(
                     project_id=project.id,
                     file_id=project_file.id,
                     module=module,
@@ -207,7 +206,7 @@ def _extract_imports(
 
 def _resolve_local_parent_symbols(result: PythonStaticAnalysisResult) -> None:
     symbols_by_id = {symbol.id: symbol for symbol in result.symbols}
-    classes_by_name: dict[str, list[CodeSymbolSchema]] = defaultdict(list)
+    classes_by_name: dict[str, list[CodeSymbol]] = defaultdict(list)
     for symbol in result.symbols:
         if symbol.symbol_type == "class":
             classes_by_name[symbol.name].append(symbol)

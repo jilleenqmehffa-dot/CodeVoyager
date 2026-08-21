@@ -3,11 +3,10 @@ from pathlib import Path
 
 from app.core.exceptions import InvalidLocalProjectError
 from app.models.project_files import ProjectFile, ProjectFileCategory
-from app.models.project_scans import ProjectScan
+from app.models.project_scans import ProjectScan, ProjectScanResult
 from app.models.projects import Project
 from app.repositories.project_files import ProjectFileRepository
 from app.repositories.project_scans import ProjectScanRepository
-from app.schemas.project_scans import ProjectScanResult
 
 IGNORED_DIRECTORIES = {
     ".git",

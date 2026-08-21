@@ -7,8 +7,12 @@ from app.models.file_relationship import (
 )
 from app.models.inheritance_relations import InheritanceRelation
 from app.models.project_files import ProjectFile, ProjectFileCategory
-from app.models.project_scans import ProjectScan
+from app.models.project_scans import ProjectScan, ProjectScanResult
 from app.models.projects import Project
+from app.models.static_analysis import (
+    PythonAnalysisFailure,
+    PythonStaticAnalysisResult,
+)
 
 __all__ = [
     "CodeImport",
@@ -20,6 +24,9 @@ __all__ = [
     "ProjectFile",
     "ProjectFileCategory",
     "ProjectScan",
+    "ProjectScanResult",
+    "PythonAnalysisFailure",
+    "PythonStaticAnalysisResult",
     "RelationshipEntityType",
     "RelationshipType",
 ]
