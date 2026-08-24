@@ -1,3 +1,4 @@
+from app.models.architecture import ArchitectureEdge, ArchitectureMap, ArchitectureNode
 from app.models.code_imports import CodeImport
 from app.models.code_symbols import CodeSymbol, CodeSymbolType
 from app.models.file_relationship import (
@@ -16,6 +17,9 @@ from app.models.static_analysis import (
 )
 
 __all__ = [
+    "ArchitectureEdge",
+    "ArchitectureMap",
+    "ArchitectureNode",
     "CodeImport",
     "CodeSymbol",
     "CodeSymbolType",

@@ -1,3 +1,7 @@
+from app.repositories.architecture import (
+    ArchitectureRepository,
+    get_architecture_repository,
+)
 from app.repositories.projects import ProjectRepository, get_project_repository
 from app.repositories.project_files import (
     ProjectFileRepository,
@@ -25,6 +29,7 @@ from app.repositories.inheritance_relations import (
 )
 
 __all__ = [
+    "ArchitectureRepository",
     "CodeImportRepository",
     "CodeSymbolRepository",
     "InheritanceRelationRepository",
@@ -32,6 +37,7 @@ __all__ = [
     "ProjectOverviewRepository",
     "ProjectRepository",
     "ProjectScanRepository",
+    "get_architecture_repository",
     "get_code_import_repository",
     "get_code_symbol_repository",
     "get_inheritance_relation_repository",

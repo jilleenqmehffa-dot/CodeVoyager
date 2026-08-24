@@ -30,3 +30,8 @@ class ProjectAlreadyExistsError(CodeVoyagerError):
 
 class ProjectAnalysisError(CodeVoyagerError):
     pass
+
+
+class ArchitectureNotFoundError(CodeVoyagerError):
+    status_code = 404
+    code = "architecture_not_found"
