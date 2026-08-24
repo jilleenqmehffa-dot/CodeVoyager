@@ -35,3 +35,13 @@ class ProjectAnalysisError(CodeVoyagerError):
 class ArchitectureNotFoundError(CodeVoyagerError):
     status_code = 404
     code = "architecture_not_found"
+
+
+class ProjectFileNotFoundError(CodeVoyagerError):
+    status_code = 404
+    code = "project_file_not_found"
+
+
+class FileReadError(CodeVoyagerError):
+    status_code = 422
+    code = "file_read_error"

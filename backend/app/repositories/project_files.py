@@ -81,19 +81,20 @@ class ProjectFileRepository:
                 .where(ProjectFileRecord.project_id == str(project_id))
                 .order_by(ProjectFileRecord.path)
             ).all()
-        return [
-            ProjectFile(
-                id=record.id,
-                project_id=record.project_id,
-                path=record.path,
-                name=record.name,
-                file_type=record.file_type,
-                language=record.language,
-                category=record.category,
-                is_directory=record.is_directory,
+        return [_to_project_file(record) for record in records]
+
+    def get(self, project_id: UUID, file_id: UUID) -> ProjectFile | None:
+        """Return one file only when it belongs to the requested project."""
+
+        self.initialize()
+        with self._session_factory() as session:
+            record = session.scalar(
+                select(ProjectFileRecord).where(
+                    ProjectFileRecord.id == str(file_id),
+                    ProjectFileRecord.project_id == str(project_id),
+                )
             )
-            for record in records
-        ]
+        return _to_project_file(record) if record is not None else None
 
     def get_python_source_by_project_id(
         self,
@@ -113,19 +114,7 @@ class ProjectFileRepository:
                 )
                 .order_by(ProjectFileRecord.path)
             ).all()
-        return [
-            ProjectFile(
-                id=record.id,
-                project_id=record.project_id,
-                path=record.path,
-                name=record.name,
-                file_type=record.file_type,
-                language=record.language,
-                category=record.category,
-                is_directory=record.is_directory,
-            )
-            for record in records
-        ]
+        return [_to_project_file(record) for record in records]
 
     def delete_by_project_id(self, project_id: UUID) -> int:
         self.initialize()
@@ -141,3 +130,16 @@ class ProjectFileRepository:
 @lru_cache
 def get_project_file_repository() -> ProjectFileRepository:
     return ProjectFileRepository(get_settings().database_path)
+
+
+def _to_project_file(record: ProjectFileRecord) -> ProjectFile:
+    return ProjectFile(
+        id=record.id,
+        project_id=record.project_id,
+        path=record.path,
+        name=record.name,
+        file_type=record.file_type,
+        language=record.language,
+        category=record.category,
+        is_directory=record.is_directory,
+    )

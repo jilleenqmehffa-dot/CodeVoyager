@@ -3,7 +3,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.core.exceptions import ArchitectureNotFoundError, ProjectNotFoundError
+from app.core.exceptions import (
+    ArchitectureNotFoundError,
+    ProjectFileNotFoundError,
+    ProjectNotFoundError,
+)
 from app.models.architecture import ArchitectureMap
 from app.repositories.architecture import (
     ArchitectureRepository,
@@ -17,9 +21,11 @@ from app.repositories.project_overview import (
     get_project_overview_repository,
 )
 from app.repositories.projects import ProjectRepository, get_project_repository
+from app.schemas.files import ProjectFileContentSchema
 from app.schemas.projects import LocalProjectImportRequest, ProjectSchema
 from app.services.architecture_map_builder import rebuild_project_architecture
 from app.services.projects import import_local_project
+from app.services.read_file import read_file
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -93,4 +99,33 @@ async def rebuild_project_architecture_route(
         symbol_repository,
         import_repository,
         overview_repository,
+    )
+
+
+@router.get(
+    "/{project_id}/files/{file_id}",
+    response_model=ProjectFileContentSchema,
+)
+async def get_project_file_content_route(
+    project_id: UUID,
+    file_id: UUID,
+    project_repository: Annotated[ProjectRepository, Depends(get_project_repository)],
+    file_repository: Annotated[ProjectFileRepository, Depends(get_project_file_repository)],
+) -> ProjectFileContentSchema:
+    project = project_repository.get(project_id)
+    if project is None:
+        raise ProjectNotFoundError(f"Project not found: {project_id}")
+    project_file = file_repository.get(project_id, file_id)
+    if project_file is None:
+        raise ProjectFileNotFoundError(
+            f"Project file not found: {file_id}"
+        )
+    return ProjectFileContentSchema(
+        id=project_file.id,
+        project_id=project_file.project_id,
+        path=project_file.path,
+        name=project_file.name,
+        file_type=project_file.file_type,
+        language=project_file.language,
+        content=read_file(project.local_path, project_file),
     )
