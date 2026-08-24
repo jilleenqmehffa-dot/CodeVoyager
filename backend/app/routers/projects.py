@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.core.exceptions import (
     ArchitectureNotFoundError,
@@ -22,8 +22,10 @@ from app.repositories.project_overview import (
 )
 from app.repositories.projects import ProjectRepository, get_project_repository
 from app.schemas.files import ProjectFileContentSchema
+from app.schemas.code_search import SymbolSearchResultSchema, TextSearchResultSchema
 from app.schemas.projects import LocalProjectImportRequest, ProjectSchema
 from app.services.architecture_map_builder import rebuild_project_architecture
+from app.services.code_search import find_symbol, search_text
 from app.services.projects import import_local_project
 from app.services.read_file import read_file
 
@@ -129,3 +131,41 @@ async def get_project_file_content_route(
         language=project_file.language,
         content=read_file(project.local_path, project_file),
     )
+
+
+@router.get(
+    "/{project_id}/search/text",
+    response_model=list[TextSearchResultSchema],
+)
+async def search_project_text_route(
+    project_id: UUID,
+    query: Annotated[
+        str,
+        Query(min_length=1, max_length=255, pattern=r".*\S.*"),
+    ],
+    project_repository: Annotated[ProjectRepository, Depends(get_project_repository)],
+    file_repository: Annotated[ProjectFileRepository, Depends(get_project_file_repository)],
+) -> list[TextSearchResultSchema]:
+    project = project_repository.get(project_id)
+    if project is None:
+        raise ProjectNotFoundError(f"Project not found: {project_id}")
+    return search_text(project, query, file_repository)
+
+
+@router.get(
+    "/{project_id}/search/symbols",
+    response_model=list[SymbolSearchResultSchema],
+)
+async def search_project_symbols_route(
+    project_id: UUID,
+    name: Annotated[
+        str,
+        Query(min_length=1, max_length=255, pattern=r".*\S.*"),
+    ],
+    project_repository: Annotated[ProjectRepository, Depends(get_project_repository)],
+    symbol_repository: Annotated[CodeSymbolRepository, Depends(get_code_symbol_repository)],
+    file_repository: Annotated[ProjectFileRepository, Depends(get_project_file_repository)],
+) -> list[SymbolSearchResultSchema]:
+    if project_repository.get(project_id) is None:
+        raise ProjectNotFoundError(f"Project not found: {project_id}")
+    return find_symbol(project_id, name, symbol_repository, file_repository)

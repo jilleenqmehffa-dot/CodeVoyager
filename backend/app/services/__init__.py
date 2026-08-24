@@ -1,3 +1,4 @@
+from app.services.code_search import find_symbol, search_text
 from app.services.project_scanner import scan_and_save_project, scan_project
 from app.services.project_overview_llm import (
     generate_and_send_project_overview,
@@ -12,6 +13,7 @@ from app.services.python_static_analyzer import (
 )
 
 __all__ = [
+    "find_symbol",
     "analyze_file_relationships",
     "analyze_and_save_project",
     "analyze_project",
@@ -20,5 +22,6 @@ __all__ = [
     "generate_and_send_project_overview",
     "scan_and_save_project",
     "scan_project",
+    "search_text",
     "send_project_overview_to_llm",
 ]
